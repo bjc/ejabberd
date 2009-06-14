@@ -328,6 +328,8 @@ subscribe_node(NodeId, Sender, Subscriber, AccessModel,
 				 _ -> subscribed
 			     end,
 		    set_state(SubState#pubsub_state{subscriptions = [{NewSub, SubId} | Subscriptions]}),
+                    queue_reap_if_expires(SubId, SubState#pubsub_state.stateid,
+                                          Options),
 		    case {NewSub, SendLast} of
 			{subscribed, never} ->
 			    {result, {default, subscribed, SubId}};
@@ -339,6 +341,16 @@ subscribe_node(NodeId, Sender, Subscriber, AccessModel,
 		_ ->
 		    {error, ?ERR_INTERNAL_SERVER_ERROR}
 	    end
+    end.
+
+find_opt(_,      [])                    -> false;
+find_opt(Option, [{Option, Value} | _]) -> Value;
+find_opt(Option, [_ | T])               -> find_opt(Option, T).
+
+queue_reap_if_expires(SubID, StateID, Options) ->
+    case find_opt(expire, Options) of
+        false -> ok;
+        When  -> mod_pubsub_reaper:enqueue(When, SubID, StateID)
     end.
 
 %% @spec (NodeId, Sender, Subscriber, SubId) ->

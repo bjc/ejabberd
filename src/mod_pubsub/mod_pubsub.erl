@@ -2597,6 +2597,10 @@ set_options_helper(Configuration, JID, NodeID, SubID, Type) ->
 write_sub(_Subscriber, _NodeID, _SubID, invalid) ->
     {error, extended_error(?ERR_BAD_REQUEST, "invalid-options")};
 write_sub(Subscriber, NodeID, SubID, Options) ->
+    case get_option(Options, expire) of
+        false -> ok;
+        When  -> mod_pubsub_reaper:enqueue(When, SubID, {Subscriber, NodeID})
+    end,
     case pubsub_subscription:set_subscription(Subscriber, NodeID, SubID, Options) of
 	{error, notfound} ->
 	    {error, extended_error(?ERR_NOT_ACCEPTABLE, "invalid-subid")};
