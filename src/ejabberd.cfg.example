@@ -520,6 +520,15 @@
 		  {last_item_cache, false},
 		  {plugins, ["flat", "hometree", "pep"]}  % pep requires mod_caps
 		 ]},
+  {mod_pubsub_reaper, [
+                       %% Send an expiry warning event 300s before
+                       %% unsubscription.
+                       {notify_time, 300},
+
+                       %% Do not scan for orphaned subscriptions on
+                       %% startup.
+                       {reap_orphans, false}
+                      ]},
   {mod_register, [
 		  %%
 		  %% After successful registration, the user receives
