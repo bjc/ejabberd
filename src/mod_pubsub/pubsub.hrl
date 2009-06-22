@@ -32,6 +32,10 @@
 %% Would be nice to have it configurable. 
 -define(MAX_PAYLOAD_SIZE, 60000).
 
+%% The maximum number of subscriptions a bare jid can obtain to a
+%% single node.
+-define(MAX_SUBSCRIPTIONS, 10).
+
 %% -------------------------------
 %% Pubsub types
 

@@ -292,11 +292,18 @@ subscribe_node(NodeId, Sender, Subscriber, AccessModel,
 	end,
     Affiliation = GenState#pubsub_state.affiliation,
     Subscriptions = SubState#pubsub_state.subscriptions,
+    JIDSubs = get_jid_subscriptions(NodeId, Subscriber),
+    JIDSubsLen = length(JIDSubs),
     Whitelisted = lists:member(Affiliation, [member, publisher, owner]),
     PendingSubscription = lists:any(fun({pending, _}) -> true;
 					(_)	    -> false
 				    end, Subscriptions),
     if
+        JIDSubsLen > ?MAX_SUBSCRIPTIONS ->
+            %% Too many subscriptions. There is no standard error at
+            %% this time, so return a custom one. -bjc (2009-06-22)
+            {error, ?ERR_EXTENDED(?ERR_NOT_AUTHORIZED,
+                                  "too-many-subscriptions")};
 	not Authorized ->
 	    %% JIDs do not match
 	    {error, ?ERR_EXTENDED(?ERR_BAD_REQUEST, "invalid-jid")};
@@ -698,6 +705,19 @@ get_entity_subscriptions(Host, Owner) ->
 	end
     end, [], States),
     {result, Reply}.
+
+%% @spec (NodeId, JID) -> [{Subscription, SubscriptionID}]
+%%       NodeId = mod_pubsub:pubsubNodeId()
+%%       JID = mod_pubsub:jid()
+%% @doc Return all the subscriptions for `JID' on `NodeId'
+get_jid_subscriptions(NodeId, JID) ->
+    {U, D, _} = jlib:jid_tolower(JID),
+    %% TODO: Should look up NodeTree plugin here, but since we don't
+    %% have access to the host, just troll the pubsub_state table
+    %% directly.
+    Subs = mnesia:match_object(#pubsub_state{stateid = {{U, D, '_'}, NodeId},
+                                             _       = '_'}),
+    lists:flatmap(fun (#pubsub_state{subscriptions = Ss}) -> Ss end, Subs).
 
 get_node_subscriptions(NodeId) ->
     {result, States} = get_states(NodeId),
