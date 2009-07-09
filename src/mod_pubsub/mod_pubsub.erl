@@ -2263,6 +2263,15 @@ get_items(Host, Node, From, SubId, SMaxItems, ItemIDs) ->
 		     end
 	     end,
 	     case transaction(Host, Node, Action, sync_dirty) of
+		{result, {_, {collection, ItemsByNode}}} ->
+                     ItemEls = lists:flatmap(fun ({#pubsub_node{nodeid = {_, NodeID}}, Items}) ->
+                                                     [{xmlelement, "items", nodeAttr(NodeID),
+                                                       itemsEls(Items)}];
+                                                 (_) ->
+                                                     []
+                                             end, ItemsByNode),
+                     {result, [{xmlelement, "pubsub", [{"xmlns", ?NS_PUBSUB}],
+                                ItemEls}]};
 		{result, {_, Items}} ->
 		    SendItems = case ItemIDs of
 			[] -> 
