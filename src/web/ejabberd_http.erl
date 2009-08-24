@@ -466,7 +466,7 @@ recv_data(_State, 0, Acc) ->
 recv_data(State, Len, Acc) ->
     case State#state.trail of
 	[] ->
-	    case (State#state.sockmod):recv(State#state.socket,   Len, 300000) of
+	    case (State#state.sockmod):recv(State#state.socket, 0, 300000) of
 		{ok, Data} ->
 		    recv_data(State, Len - size(Data), [Acc | Data]);
 		_ ->
