@@ -436,5 +436,5 @@ unsubscribed_event(JID, Node, SubID) ->
     event_stanza([{xmlelement, "subscription", Attrs, []}]).
 
 event_stanza(Els) ->
-    {xmlelement, "message", [],
+    {xmlelement, "message", [{"type", "headline"}],
      [{xmlelement, "event", [{"xmlns", ?NS_PUBSUB_EVENT}], Els}]}.
