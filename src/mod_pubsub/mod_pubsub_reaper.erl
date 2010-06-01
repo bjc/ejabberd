@@ -233,12 +233,12 @@ reap_subscription_helper(SubID, StateID) ->
         {value, Sub, State, Node} ->
             Now = now(),
             case find_opt(expire, Sub#pubsub_subscription.options) of
-                false ->
-                    ok;
                 When when When < Now ->
                     ok = update_pubsub_state(SubID, State),
                     ok = delete_subscription(Sub),
-                    notify_expired_subscription(Sub, State, Node)
+                    notify_expired_subscription(Sub, State, Node);
+                _ ->
+                    ok
             end;
         false ->
             ok
