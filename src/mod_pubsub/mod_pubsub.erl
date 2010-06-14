@@ -1457,7 +1457,7 @@ send_pending_auth_events(Host, Node, Owner) ->
 			     ({J, pending}) -> send_authorization_request(N, jlib:make_jid(J));
 			     (_) -> ok
 			  end, Subscriptions),
-	    #adhoc_response{};
+	    #adhoc_response{status = completed};
 	Err ->
 	    Err
     end.
